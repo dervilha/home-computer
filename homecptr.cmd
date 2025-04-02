@@ -1,2 +1,2 @@
 @echo off
-python src/cli.py %*
+python core/main.py %*

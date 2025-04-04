@@ -65,20 +65,30 @@ kernel32.SetConsoleMode(
     ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT
 )
 
+_forced_event_stack = []
+def force_input(event):
+    _forced_event_stack.append(event)
+
 def read_input():
+    if _forced_event_stack:
+        return _forced_event_stack.pop()
+
     record = INPUT_RECORD()
     count = wintypes.DWORD()
 
-    success = kernel32.ReadConsoleInputW(handle, ctypes.byref(record), 1, ctypes.byref(count))
+    # success = kernel32.ReadConsoleInputW(handle, ctypes.byref(record), 1, ctypes.byref(count))
+    success = kernel32.PeekConsoleInputW(handle, ctypes.byref(record), 1, ctypes.byref(count))
     if not success or count.value == 0:
         return None
+
+    kernel32.ReadConsoleInputW(handle, ctypes.byref(record), 1, ctypes.byref(count))
 
     if record.EventType == KEY_EVENT:
         key = record.Event.KeyEvent
 
         return {
-            'type': 'key',
-            'key': key.uChar,
+            'type': KEY_EVENT,
+            'key': ord(key.uChar),
             'press': key.bKeyDown,
             'keycode': key.wVirtualKeyCode,
             'scancode': key.wVirtualScanCode
@@ -100,3 +110,18 @@ def read_input():
         elif event_flags == MOUSE_WHEELED:
             return {'type': 'mouse', 'event': 'wheel', 'x': x, 'y': y, 'state':state}
      
+
+def hide_cursor():
+    # Get the handle to the console output
+    stdout_handle = ctypes.windll.kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE = -11
+
+    # Define the CONSOLE_CURSOR_INFO structure
+    class CONSOLE_CURSOR_INFO(ctypes.Structure):
+        _fields_ = [("dwSize", ctypes.c_int),
+                    ("bVisible", ctypes.c_bool)]
+
+    # Create an instance and set cursor visibility to False
+    cursor_info = CONSOLE_CURSOR_INFO()
+    ctypes.windll.kernel32.GetConsoleCursorInfo(stdout_handle, ctypes.byref(cursor_info))
+    cursor_info.bVisible = False
+    ctypes.windll.kernel32.SetConsoleCursorInfo(stdout_handle, ctypes.byref(cursor_info))

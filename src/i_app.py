@@ -1,3 +1,7 @@
+# App Interface
+# Author: Daniel Ervilha
+# Type: interface
+
 from abc import ABC, abstractmethod
 
 class Page:
@@ -9,17 +13,15 @@ class Page:
         self.text: list[list[str]] = [[" " for _ in range(width)] for _ in range(height)]
     
     def draw(self, x: int, y: int):
-        # out = f"\033[{y};{x}H" # move cursor to position
         out = ""
         for dy in range(self.height):
-            out += f"\033[{y + dy};{x}H"
+            out += f"\033[{y + dy};{x}H" # move cursor to position
             out += "".join([
                 f"\33[48;2;{self.background[dy][i][0]};{self.background[dy][i][1]};{self.background[dy][i][2]}m"
                 f"\33[38;2;{self.foreground[dy][i][0]};{self.foreground[dy][i][1]};{self.foreground[dy][i][2]}m"
                 f"{char}"
                 for i, char in enumerate(self.text[dy])
-            ])
-
+            ]) # join background + foreground + text
         print(out, end='')
 
 

@@ -1,6 +1,6 @@
-# Windows Terminal Input
+# Windows Terminal Input Interface
 # Author: Daniel Ervilha
-# Type: lib
+# Type: interface
 
 # Known issues
 # - Mouse Events missing button release
@@ -11,6 +11,7 @@ import ctypes.wintypes as wintypes
 
 # Constants from Windows API
 STD_INPUT_HANDLE = -10
+STD_OUTPUT_HANDLE = -11
 ENABLE_MOUSE_INPUT = 0x0010
 ENABLE_EXTENDED_FLAGS = 0x0080
 ENABLE_WINDOW_INPUT = 0x0008
@@ -76,7 +77,6 @@ def read_input():
     record = INPUT_RECORD()
     count = wintypes.DWORD()
 
-    # success = kernel32.ReadConsoleInputW(handle, ctypes.byref(record), 1, ctypes.byref(count))
     success = kernel32.PeekConsoleInputW(handle, ctypes.byref(record), 1, ctypes.byref(count))
     if not success or count.value == 0:
         return None
@@ -112,16 +112,12 @@ def read_input():
      
 
 def hide_cursor():
-    # Get the handle to the console output
-    stdout_handle = ctypes.windll.kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE = -11
-
-    # Define the CONSOLE_CURSOR_INFO structure
     class CONSOLE_CURSOR_INFO(ctypes.Structure):
         _fields_ = [("dwSize", ctypes.c_int),
                     ("bVisible", ctypes.c_bool)]
-
-    # Create an instance and set cursor visibility to False
     cursor_info = CONSOLE_CURSOR_INFO()
+        
+    stdout_handle = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
     ctypes.windll.kernel32.GetConsoleCursorInfo(stdout_handle, ctypes.byref(cursor_info))
     cursor_info.bVisible = False
     ctypes.windll.kernel32.SetConsoleCursorInfo(stdout_handle, ctypes.byref(cursor_info))

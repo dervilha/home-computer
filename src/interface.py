@@ -1,14 +1,15 @@
+# Home Computer Main Interface
+# Author: Daniel Ervilha
+# Type: app
 from i_app import Page, BaseApp
 
 class MainInterface(BaseApp):
     def start(self, page: Page):
-        # print("start")
         self._running = True
 
 
     def update(self, page: Page, delta_time: float, events: list[dict[int, int]]):
         for event in events:
-            # print(event)
             if event['type'] == 1 and event['press'] == 1:
                 if event['key'] == ord('q'):
                     self._running = False                

@@ -16,12 +16,3 @@ def size():
 
 def clear_screen():
     print("\033[2J\033[H", end='')
-
-def clear_background():
-    ...
-
-def clear_foreground():
-    ...
-
-def cout(x: int, y: int, chars: str):
-    print(chars, end='')
